@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Test</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Fullscreen looping video background (bg_video.mp4) -->
+  <video id="bgVideo" class="bg-video" autoplay muted loop playsinline preload="auto">
+    <source src="assets/bg_video.mp4" type="video/mp4" />
+  </video>
+
+  <!-- linear1 / linear3 -->
+  <div class="screen" id="screen">
+    <div class="stage" id="linear_asasy">
+      <!-- linear23 -->
+      <div class="row-center">
+        <!-- linear52: FrameLayout holding the rotating image + the value text -->
+        <div class="frame" id="linear52">
+          <div class="rotating-wrap">
+            <img id="rotatingImage" src="assets/pix3.png" alt="" class="rotating-image" />
+          </div>
+          <span class="value-text" id="textview28">&times;0.00</span>
+        </div>
+      </div>
+
+      <!-- linear_b3: buttons -->
+      <div class="buttons-row" id="linear_b3">
+        <div class="button" id="linear29">
+          <span class="button-label" id="textview13">START</span>
+        </div>
+        <div class="button" id="linear30">
+          <span class="button-label" id="textview14">AGAIN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom loading overlay (white rounded box + spinner) -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- Firebase Realtime Database (compat SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
