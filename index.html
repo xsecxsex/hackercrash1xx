@@ -2217,7 +2217,7 @@
                         users: d.users - 1
                     });
                     if (d.product === 'plane') {
-                        localStorage.setItem('GLITCHPlaneAuth', JSON.stringify({id, code, expiry:d.expiry}));
+                        localStorage.setItem('lionPlaneAuth', JSON.stringify({id, code, expiry:d.expiry}));
                         location.href = '/plane';
                     } else {
                         if (!selAv) return toast('⚠️ اختر الشخصية أولاً للدخول إلى كشف النمط');
@@ -2416,7 +2416,7 @@
             document.getElementById('package-heading').innerText = type === 'plane' ? 'باقات الطيارة' : 'باقات التفاحة';
             if (type === 'plane') {
                 packageCatalog = PLANE_PACKAGES.slice();
-                grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="/assets/plane-package.png" alt="Aviator package" loading="lazy"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
+                grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="https://i.ibb.co/p6sZpk28/photo-2026-08-25-02-03-50.jpg" alt="Aviator package" loading="lazy"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
             } else {
                 packageCatalog = (appleCatalog.length ? appleCatalog : APPLE_PACKAGES.map((p) => ({...p, img:'/assets/pix3.png'}))).slice();
                 grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="${escapeHtml(p.img || '/assets/pix3.png')}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.style.display='none'"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
