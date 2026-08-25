@@ -1,4 +1,4 @@
-# LION deployment
+# GLITCH deployment
 
 1. Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in Vercel Project Settings → Environment Variables.
 2. Deploy this folder with `index.html` at the project root.

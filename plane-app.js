@@ -1,13 +1,13 @@
 (function () {
   'use strict';
 
-  // Firebase LION: activation keys and orders.
-  var LION_DB_URL = 'https://zoomelbet-bc9fd-default-rtdb.europe-west1.firebasedatabase.app/';
+  // Firebase GLITCH: activation keys and orders.
+  var GLITCH_DB_URL = 'https://zoomelbet-bc9fd-default-rtdb.europe-west1.firebasedatabase.app/';
   // Firebase Archive: live game multiplier feed at node "pre".
   var GAME_DB_URL = 'https://zoz8-f2d27-default-rtdb.firebaseio.com';
 
   var ref = null; // Archive DatabaseReference "pre"
-  var lionDb = null;
+  var glitchDb = null;
   var attached = false;
 
   var btnStart = document.getElementById('linear29');
@@ -17,11 +17,11 @@
   // The plane page is available only after Firebase validates a plane activation code.
   var auth = null;
   var expiryTimer = null;
-  try { auth = JSON.parse(localStorage.getItem('lionPlaneAuth') || 'null'); } catch (e) { auth = null; }
+  try { auth = JSON.parse(localStorage.getItem('glitchPlaneAuth') || 'null'); } catch (e) { auth = null; }
   var loadingOverlay = document.getElementById('loadingOverlay');
 
   function rejectAccess() {
-    localStorage.removeItem('lionPlaneAuth');
+    localStorage.removeItem('glitchPlaneAuth');
     window.location.replace('/');
   }
 
@@ -36,7 +36,7 @@
   }
 
   function validatePlaneAccess() {
-    if (!auth || !auth.code) return rejectAccess();
+    if (!auth || !auth.code || !/^GLITCH-[A-Z0-9]{10}$/.test(String(auth.code).trim())) return rejectAccess();
     firebase.database().ref('keys/' + auth.code).once('value').then(function (snapshot) {
       var key = snapshot.val();
       if (!key || key.product !== 'plane' || !key.expiry || new Date(key.expiry) <= new Date()) {
@@ -44,7 +44,7 @@
         return;
       }
       auth.expiry = key.expiry;
-      localStorage.setItem('lionPlaneAuth', JSON.stringify(auth));
+      localStorage.setItem('glitchPlaneAuth', JSON.stringify(auth));
       document.body.classList.remove('auth-pending');
       startExpiryGuard();
       attachListener();
@@ -144,9 +144,9 @@
   });
 
   // ---------- Init (initializeLogic + setupVideoBackground + setupRotatingImage) ----------
-  // Default app is LION and is used only to validate the activation key.
-  firebase.initializeApp({ databaseURL: LION_DB_URL });
-  lionDb = firebase.database();
+  // Default app is GLITCH and is used only to validate the activation key.
+  firebase.initializeApp({ databaseURL: GLITCH_DB_URL });
+  glitchDb = firebase.database();
   // Named second app preserves the original Archive game data source.
   var gameApp = firebase.initializeApp({ databaseURL: GAME_DB_URL }, 'archiveGame');
   ref = gameApp.database().ref('pre');

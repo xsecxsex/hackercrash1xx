@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#09070d">
   <meta name="color-scheme" content="dark">
   <meta name="supported-color-schemes" content="dark">
-  <title>LION Admin</title>
+  <title>GLITCH Admin</title>
   <style>
     :root{color-scheme:dark;forced-color-adjust:none;--bg:#09070d;--card:#17111f;--line:#3b253f;--red:#e10031;--gold:#d4af37;--text:#f7eef7;--muted:#b8a9bb;--green:#36d98b}
     *,*::before,*::after{box-sizing:border-box;color-scheme:dark !important;forced-color-adjust:none !important}
@@ -22,7 +22,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="brand">LION</div><div class="sub">ADMIN CONTROL</div>
+  <div class="brand">GLITCH</div><div class="sub">ADMIN CONTROL</div>
   <section id="login" class="panel login">
     <div class="title">دخول لوحة التحكم</div>
     <input id="username" class="input" autocomplete="username" placeholder="اسم المستخدم">
@@ -63,7 +63,7 @@
   $('addBtn').onclick=()=>{$('addModal').classList.remove('hidden');$('manualError').textContent=''};
   $('closeModal').onclick=$('cancelManual').onclick=()=>{$('addModal').classList.add('hidden')};
   function showDashboard(){ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');loadOrders() }
-  function code(){const a=new Uint32Array(2);crypto.getRandomValues(a);return 'GLITCH-'+Array.from(a).map(n=>n.toString(36).toUpperCase()).join('').slice(-10)}
+  function code(){let value='';while(value.length<10){const a=new Uint32Array(4);crypto.getRandomValues(a);value+=Array.from(a).map(n=>n.toString(36).toUpperCase()).join('')}return 'GLITCH-'+value.slice(0,10)}
   function render(snap){const root=$('orders');if(!snap.exists()){root.innerHTML='<div class="empty">لا توجد طلبات حتى الآن</div>';return}let html='';snap.forEach(c=>{const o=c.val()||{},ok=o.status==='approved';html+=`<article class="order ${ok?'approved':''}"><div class="meta">📦 <b>${label(o.product)} · ${esc(o.item)}</b><br>⏱ المدة: ${esc(o.minutes)} دقيقة<br>💰 السعر: ${esc(o.price)} EGP<br>👤 Telegram: ${esc(o.tg)}<br>📞 رقم التحويل: ${esc(o.num)}<br><span class="small">رقم الطلب: ${esc(c.key)}</span></div>${o.img?`<img class="proof" src="${esc(o.img)}" onclick="window.open(this.src,'_blank')">`:''}${ok?`<div class="code">${esc(o.activationCode)}<br><span class="small">ينتهي: ${new Date(o.expiry).toLocaleString('ar-EG')}</span></div>`:`<button class="btn gold" onclick="approve('${esc(c.key)}')">✅ تأكيد وتوليد الكود</button>`}<button class="btn danger" style="width:100%;margin-top:10px" onclick="deleteOrder('${esc(c.key)}')">🗑 حذف الطلب</button></article>`});root.innerHTML=html}
   function loadOrders(){db.ref('orders').on('value',render,()=>{$('orders').innerHTML='<div class="empty">تعذر تحميل الطلبات. راجع إعدادات Firebase.</div>'})}
   async function approve(id){const ref=db.ref('orders/'+id),s=await ref.once('value'),o=s.val();if(!o||o.status==='approved')return;const c=code(),expiry=new Date(Date.now()+Number(o.minutes||30)*60000).toISOString();await db.ref('keys/'+c).set({users:1,expiry,product:o.product||'apple',telegram:o.tg,orderId:id});await ref.update({status:'approved',activationCode:c,expiry});try{const r=await fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:id,tg:o.tg,num:o.num,item:o.item,price:o.price,minutes:o.minutes,product:o.product,code:c,expiry})});if(!r.ok)throw new Error('api');alert('تم التأكيد وتوليد الكود وإرساله للبوت')}catch(e){alert('تم توليد الكود وحفظه، لكن تعذر إرسال رسالة الكود للبوت. تأكد من إعدادات Vercel.')}}

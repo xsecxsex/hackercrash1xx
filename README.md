@@ -1,6 +1,6 @@
-# LION Activation Store
+# GLITCH Activation Store
 
-Static LION activation store with a Vercel API endpoint for forwarding payment requests to Telegram.
+Static GLITCH activation store with a Vercel API endpoint for forwarding payment requests to Telegram.
 
 ## Deploy
 
@@ -8,4 +8,4 @@ Upload this folder to GitHub, import the repository into Vercel, and add `TELEGR
 
 ## Archive
 
-The original Archive game files are preserved unchanged under `archive/`. The protected LION route uses `plane.html`; the original standalone Archive can be opened at `/archive/index.html` if needed.
+The original Archive game files are preserved unchanged under `archive/`. The protected GLITCH route uses `plane.html`; the original standalone Archive can be opened at `/archive/index.html` if needed.

@@ -2245,6 +2245,7 @@
                 startApp(id, 'UNLIMITED');
                 return;
             }
+            if (!/^GLITCH-[A-Z0-9]{10}$/.test(code)) return toast('❌ صيغة الكود غير صحيحة؛ يجب أن تكون GLITCH-XXXXXXXXXX');
             showLoader('VERIFYING CODE');
             db.ref('keys/' + code).once('value', snap => {
                 hideLoader();
@@ -2258,7 +2259,7 @@
                         users: d.users - 1
                     });
                     if (d.product === 'plane') {
-                        localStorage.setItem('lionPlaneAuth', JSON.stringify({id, code, expiry:d.expiry}));
+                        localStorage.setItem('glitchPlaneAuth', JSON.stringify({id, code, expiry:d.expiry}));
                         location.href = '/plane';
                     } else {
                         if (!selAv) return toast('⚠️ اختر الشخصية أولاً للدخول إلى كشف النمط');
@@ -2483,7 +2484,7 @@
             const tg = document.getElementById('pay-tg').value.trim();
             const num = document.getElementById('pay-num').value.trim();
             const f = document.getElementById('pay-img').files[0];
-            if (!curItem || !tg || !num || !f) return toast('⚠️ أكمل البيانات وارفع السكرين');
+            if (!curItem || !tg || !num || !f) return toast('⚠️ أكمل بيانات تيليجرام وارفع السكرين');
             if (f.size > 4 * 1024 * 1024) return toast('⚠️ حجم السكرين يجب أن يكون أقل من 4MB');
 
             const sendBtn = document.getElementById('send-order-btn');
@@ -2549,7 +2550,8 @@
             const u = document.getElementById('key-devices').value;
             const h = document.getElementById('key-hours').value;
             if (!u || !h) return toast('أكمل البيانات');
-            const code = 'GLITCH-' + (function(){const a=new Uint32Array(2);crypto.getRandomValues(a);return Array.from(a).map(n=>n.toString(36).toUpperCase()).join('').slice(-10)})();
+            let keyPart = ''; while (keyPart.length < 10) { const a = new Uint32Array(4); crypto.getRandomValues(a); keyPart += Array.from(a).map(n => n.toString(36).toUpperCase()).join(''); }
+            const code = 'GLITCH-' + keyPart.slice(0, 10);
             const exp = new Date();
             exp.setHours(exp.getHours() + parseInt(h));
             db.ref('keys/' + code).set({
@@ -2628,7 +2630,8 @@
             const snap = await db.ref('orders/' + orderId).once('value');
             const o = snap.val();
             if (!o || o.status === 'approved') return toast('الطلب تمت الموافقة عليه بالفعل');
-            const code = 'GLITCH-' + (function(){const a=new Uint32Array(2);crypto.getRandomValues(a);return Array.from(a).map(n=>n.toString(36).toUpperCase()).join('').slice(-10)})();
+            let keyPart = ''; while (keyPart.length < 10) { const a = new Uint32Array(4); crypto.getRandomValues(a); keyPart += Array.from(a).map(n => n.toString(36).toUpperCase()).join(''); }
+            const code = 'GLITCH-' + keyPart.slice(0, 10);
             const expiry = new Date(Date.now() + Number(o.minutes || 30) * 60000).toISOString();
             await db.ref('keys/' + code).set({ users:1, expiry, product:o.product || 'apple', telegram:o.tg, orderId });
             await db.ref('orders/' + orderId).update({ status:'approved', activationCode:code, expiry });
