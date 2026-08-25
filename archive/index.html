@@ -4,14 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0a0003" />
   <meta name="color-scheme" content="dark" />
+  <meta name="supported-color-schemes" content="dark" />
   <title>Test</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Same moving background as GIF: works on iPhone without Safari video controls. -->
-  <img id="bgAnimated" class="bg-animated" src="assets/bg_animated.gif" alt="" aria-hidden="true" draggable="false" />
+  <!-- ═══ PURE CSS ANIMATED BACKGROUND · NO VIDEO · NO GIF · IPHONE SAFARI SAFE ═══ -->
+  <div class="bg-animated" aria-hidden="true">
+    <div class="bg-base"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-beam beam-1"></div>
+    <div class="bg-beam beam-2"></div>
+    <div class="bg-beam beam-3"></div>
+    <div class="bg-beam beam-4"></div>
+    <div class="bg-beam beam-5"></div>
+    <div class="bg-particles"></div>
+    <div class="bg-vignette"></div>
+  </div>
 
   <!-- linear1 / linear3 -->
   <div class="screen" id="screen">

@@ -6,11 +6,17 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#000000" />
   <meta name="color-scheme" content="dark" />
+  <meta name="supported-color-schemes" content="dark" />
   <title>LION AIRPLANE</title>
   <link rel="stylesheet" href="style.css" />
   <style>
     body.auth-pending #screen,
     body.auth-pending #loadingOverlay { visibility: hidden; }
+    /* FORCE DARK · LOCKED · IGNORES DEVICE LIGHT/DARK MODE */
+    *,*::before,*::after{color-scheme:dark !important;forced-color-adjust:none !important}
+    html,body{background-color:#000 !important;color:#fff !important}
+    input,textarea,select,button{-webkit-appearance:none;appearance:none;color-scheme:dark}
+    ::selection{background:rgba(195,15,22,.5);color:#fff}
   </style>
 </head>
 <body class="auth-pending">
