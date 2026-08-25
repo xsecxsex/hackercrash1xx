@@ -109,11 +109,20 @@
   // ---------- Init (initializeLogic + setupVideoBackground + setupRotatingImage) ----------
   function keepBackgroundPlaying() {
     if (!bgVideo) return;
+
+    // Safari/iOS needs all of these flags for reliable muted inline playback.
     bgVideo.muted = true;
+    bgVideo.defaultMuted = true;
+    bgVideo.playsInline = true;
+    bgVideo.controls = false;
+    bgVideo.setAttribute('muted', '');
+    bgVideo.setAttribute('playsinline', '');
+    bgVideo.setAttribute('webkit-playsinline', 'true');
+
     var playPromise = bgVideo.play();
     if (playPromise && typeof playPromise.catch === 'function') {
       playPromise.catch(function () {
-        // Autoplay policies can briefly block playback; retry when the page is visible.
+        // iOS may wait for the first user gesture; the listeners below retry it.
       });
     }
   }
@@ -121,9 +130,23 @@
   if (bgVideo) {
     bgVideo.controls = false;
     bgVideo.addEventListener('pause', keepBackgroundPlaying);
+    bgVideo.addEventListener('ended', function () {
+      bgVideo.currentTime = 0;
+      keepBackgroundPlaying();
+    });
+    bgVideo.addEventListener('loadeddata', keepBackgroundPlaying);
+    bgVideo.addEventListener('canplay', keepBackgroundPlaying);
+
+    // A tap/gesture unlocks playback on iOS when autoplay is restricted.
+    ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(function (eventName) {
+      document.addEventListener(eventName, keepBackgroundPlaying, { passive: true });
+    });
+
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') keepBackgroundPlaying();
     });
+    window.addEventListener('pageshow', keepBackgroundPlaying);
+    window.addEventListener('focus', keepBackgroundPlaying);
   }
 
   firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });

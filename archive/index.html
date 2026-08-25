@@ -4,12 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="color-scheme" content="dark" />
   <title>Test</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- Original moving background; controls stay disabled so no play button is shown. -->
-  <video id="bgVideo" class="bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+  <video id="bgVideo" class="bg-video" autoplay muted loop playsinline webkit-playsinline="true" preload="auto" aria-hidden="true">
     <source src="assets/bg_video.mp4" type="video/mp4" />
   </video>
 
