@@ -12,6 +12,7 @@
   var btnAgain = document.getElementById('linear30');
   var valueText = document.getElementById('textview28');
   var loadingOverlay = document.getElementById('loadingOverlay');
+  var bgVideo = document.getElementById('bgVideo');
 
   // ---------- Firebase listener (ChildEventListener on "pre") ----------
   function attachListener() {
@@ -106,9 +107,27 @@
   });
 
   // ---------- Init (initializeLogic + setupVideoBackground + setupRotatingImage) ----------
+  function keepBackgroundPlaying() {
+    if (!bgVideo) return;
+    bgVideo.muted = true;
+    var playPromise = bgVideo.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(function () {
+        // Autoplay policies can briefly block playback; retry when the page is visible.
+      });
+    }
+  }
+
+  if (bgVideo) {
+    bgVideo.controls = false;
+    bgVideo.addEventListener('pause', keepBackgroundPlaying);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') keepBackgroundPlaying();
+    });
+  }
+
   firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
   ref = firebase.database().ref('pre');
-
-  // Video is handled by the <video> element in index.html (muted autoplay).
   attachListener();
+  keepBackgroundPlaying();
 })();
