@@ -1829,7 +1829,7 @@
                     <div class="l-ring1"></div>
                     <div class="l-ring2"></div>
                     <div class="l-bg"></div>
-                    <img class="l-img" src="https://i.postimg.cc/pdtRm8Xz/entamalkosomk.png" alt="GLITCH" onerror="this.src='https://i.postimg.cc/MpHvt0FQ/IMG-20260119-060329-514.jpg'">
+                    <img class="l-img" src="/assets/glitch-logo.png" alt="GLITCH" onerror="this.src='/assets/glitch-logo.png'">
                     <div class="l-shine"></div>
                     <div class="l-corner tl"></div>
                     <div class="l-corner tr"></div>
@@ -1874,7 +1874,7 @@
                     <div class="l-ring1" style="inset:-4px;border-radius:24px;"></div>
                     <div class="l-ring2" style="inset:-1px;border-radius:21px;"></div>
                     <div class="l-bg" style="inset:2px;border-radius:18px;"></div>
-                    <img class="l-img" style="inset:5px;border-radius:15px;width:calc(100% - 10px);height:calc(100% - 10px);" src="https://i.postimg.cc/mkMhXqV8/IMG-20260524-134736-517.jpg" alt="GLITCH" onerror="this.src='https://i.postimg.cc/MpHvt0FQ/IMG-20260119-060329-514.jpg'">
+                    <img class="l-img" style="inset:5px;border-radius:15px;width:calc(100% - 10px);height:calc(100% - 10px);" src="/assets/glitch-logo.png" alt="GLITCH" onerror="this.src='/assets/glitch-logo.png'">
                 </div>
                 <div class="brand" style="font-size:2.3rem;letter-spacing:11px;"><span class="bc">G</span><span class="bw">LITCH</span></div>
                 <div class="brand-sub" style="margin-top:8px;">PREDICTOR ACTIVE</div>
@@ -2065,7 +2065,7 @@
                 <div class="page-hdr"><button class="back-b" onclick="backAdminMenu()">←</button><span class="pg-ttl">إدارة المتجر</span></div>
                 <div class="sec">
                     <div class="fgrp"><label class="flbl">اسم الباقة</label><input type="text" id="prod-name" class="inp" placeholder="كود لمدة نصف ساعة"></div>
-                    <div class="fgrp"><label class="flbl">السعر EGP</label><input type="number" id="prod-price" class="inp" placeholder="300"></div>
+                    <div class="fgrp"><label class="flbl">السعر EGP</label><input type="number" id="prod-price" class="inp" placeholder="250"></div>
                     <div class="fgrp"><label class="flbl">المدة بالدقائق</label><input type="number" id="prod-minutes" class="inp" placeholder="30"></div>
                     <label class="file-drop" for="prod-img" id="prod-file-lbl">📎 صورة المنتج</label>
                     <input type="file" id="prod-img" accept="image/*" onchange="fileLabel(this,'prod-file-lbl')" hidden>
@@ -2360,15 +2360,21 @@
         }
 
         /* ══════════ STORE / CHECKOUT ══════════ */
-        const DEFAULT_PACKAGES = [
-            { name:'كود لمدة نصف ساعة', price:350, minutes:30 },
-            { name:'كود لمدة ساعة', price:500, minutes:60 },
-            { name:'كود لمدة ساعتين', price:1000, minutes:120 }
+        const PLANE_PACKAGES = [
+            { name:'نص ساعة', price:400, minutes:30 },
+            { name:'ساعة', price:700, minutes:60 },
+            { name:'ساعتين', price:1200, minutes:120 }
         ];
+        const APPLE_PACKAGES = [
+            { name:'نص ساعة', price:300, minutes:30 },
+            { name:'ساعة', price:600, minutes:60 },
+            { name:'ساعتين', price:1000, minutes:120 }
+        ];
+        const DEFAULT_WALLET = '01156446286';
         let selectedProduct = null;
-        let packageCatalog = DEFAULT_PACKAGES.slice();
-        let appleCatalog = [];
-        const packageCatalogByProduct = { plane: DEFAULT_PACKAGES.slice(), apple: DEFAULT_PACKAGES.slice() };
+        let packageCatalog = PLANE_PACKAGES.slice();
+        let appleCatalog = APPLE_PACKAGES.slice();
+        const packageCatalogByProduct = { plane: PLANE_PACKAGES.slice(), apple: APPLE_PACKAGES.slice() };
 
         function openStore() {
             showPage('pg-store');
@@ -2376,12 +2382,24 @@
             document.getElementById('package-panel').classList.add('hidden');
             const chooser = document.getElementById('product-chooser');
             chooser.innerHTML = `
-              <div class="product-card" data-product="plane" onclick="chooseProduct('plane')"><div class="product-logo"><img src="https://i.ibb.co/p6sZpk28/photo-2026-08-25-02-03-50.jpg" loading="lazy"></div><div class="product-title">الطيارة</div><div class="product-desc">كود تشغيل Archive</div></div>
-              <div class="product-card" data-product="apple" onclick="chooseProduct('apple')"><div class="product-logo">🍎</div><div class="product-title">التفاحة</div><div class="product-desc">كود GLITCH المعتاد</div></div>`;
-            // التفاحة تستخدم كتالوج المنتجات القديم من Firebase، والطيارة تستخدم بطاقات الصورة الجديدة.
+              <div class="product-card" data-product="plane" onclick="chooseProduct('plane')"><div class="product-logo"><img src="https://i.ibb.co/p6sZpk28/photo-2026-08-25-02-03-50.jpg" loading="lazy" alt="الطيارة"></div><div class="product-title">الطيارة</div><div class="product-desc">باقات الطيارة</div></div>
+              <div class="product-card" data-product="apple" onclick="chooseProduct('apple')"><div class="product-logo"><img src="/assets/apple-logo.webp" loading="lazy" alt="التفاحة"></div><div class="product-title">التفاحة</div><div class="product-desc">باقات التفاحة</div></div>`;
+            // صور وباقات التفاحة تُقرأ من Firebase كما كانت في النسخة الأصلية.
             db.ref('products').once('value').then(snap => {
                 appleCatalog = [];
-                snap.forEach(c => { const p=c.val(); if (p && p.name && p.price) appleCatalog.push({name:p.name, price:Number(p.price), minutes:Number(p.minutes || p.duration || inferMinutes(p.name)), img:p.img || ''}); });
+                snap.forEach(c => {
+                    const p = c.val();
+                    if (p && p.name && p.price) {
+                        const minutes = Number(p.minutes || p.duration || inferMinutes(p.name));
+                        const requested = APPLE_PACKAGES.find(item => item.minutes === minutes);
+                        appleCatalog.push({
+                            name: p.name,
+                            price: requested ? requested.price : Number(p.price),
+                            minutes,
+                            img: p.img || ''
+                        });
+                    }
+                });
                 if (selectedProduct === 'apple') renderPackageCards('apple');
             });
         }
@@ -2397,10 +2415,10 @@
             const grid = document.getElementById('package-grid');
             document.getElementById('package-heading').innerText = type === 'plane' ? 'باقات الطيارة' : 'باقات التفاحة';
             if (type === 'plane') {
-                packageCatalog = DEFAULT_PACKAGES.slice();
+                packageCatalog = PLANE_PACKAGES.slice();
                 grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="/assets/plane-package.png" alt="Aviator package" loading="lazy"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
             } else {
-                packageCatalog = (appleCatalog.length ? appleCatalog : DEFAULT_PACKAGES).slice();
+                packageCatalog = (appleCatalog.length ? appleCatalog : APPLE_PACKAGES.map((p) => ({...p, img:'/assets/pix3.png'}))).slice();
                 grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="${escapeHtml(p.img || '/assets/pix3.png')}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.style.display='none'"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
             }
         }
@@ -2417,7 +2435,7 @@
             showPage('pg-pay');
             document.getElementById('selected-package').innerText = `${selectedProduct === 'plane' ? '✈️ الطيارة' : '🍎 التفاحة'} · ${p.name} · ${p.price} EGP`;
             document.getElementById('order-state').classList.add('hidden');
-            db.ref('settings/wallet').once('value').then(w => document.getElementById('wallet-num').innerText = w.val() || 'لم يُضاف بعد');
+            document.getElementById('wallet-num').innerText = DEFAULT_WALLET;
         }
         function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
         async function sendOrder() {
