@@ -23,7 +23,7 @@
   </section>
   <section id="dashboard" class="hidden">
     <div class="panel">
-      <div class="top"><div><div class="title" style="margin:0">الطلبات الواردة</div><div class="small">اضغط تأكيد لتوليد كود بمدة الباقة بالضبط وإرسال الكود إلى البوت.</div></div><div class="row"><button class="btn gold" id="addBtn">＋ إضافة طلب</button><button class="btn gray" id="logoutBtn">خروج</button></div></div>
+      <div class="top"><div><div class="title" style="margin:0">الطلبات الواردة</div><div class="small">اضغط تأكيد لتوليد كود بمدة الباقة بالضبط وإرسال الكود إلى البوت.</div></div><div class="row"><button class="btn gold" id="addBtn">＋ إضافة طلب</button><button class="btn danger" id="deleteAllBtn">🗑 مسح جميع الطلبات</button><button class="btn gray" id="logoutBtn">خروج</button></div></div>
       <div id="orders" class="orders"><div class="empty">جاري تحميل الطلبات...</div></div>
     </div>
   </section>
@@ -51,6 +51,7 @@
   const label=p=>p==='plane'?'✈️ الطيارة':'🍎 التفاحة';
   $('loginBtn').onclick=()=>{if($('username').value.trim()==='dark'&&$('password').value==='dark'){sessionStorage.admin='1';showDashboard()}else $('loginError').textContent='بيانات الدخول غير صحيحة'};
   $('password').onkeydown=e=>{if(e.key==='Enter')$('loginBtn').click()}; $('logoutBtn').onclick=()=>{sessionStorage.removeItem('admin');location.reload()};
+  $('deleteAllBtn').onclick=deleteAllOrders;
   $('addBtn').onclick=()=>{$('addModal').classList.remove('hidden');$('manualError').textContent=''};
   $('closeModal').onclick=$('cancelManual').onclick=()=>{$('addModal').classList.add('hidden')};
   function showDashboard(){ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');loadOrders() }
@@ -59,6 +60,17 @@
   function loadOrders(){db.ref('orders').on('value',render,()=>{$('orders').innerHTML='<div class="empty">تعذر تحميل الطلبات. راجع إعدادات Firebase.</div>'})}
   async function approve(id){const ref=db.ref('orders/'+id),s=await ref.once('value'),o=s.val();if(!o||o.status==='approved')return;const c=code(),expiry=new Date(Date.now()+Number(o.minutes||30)*60000).toISOString();await db.ref('keys/'+c).set({users:1,expiry,product:o.product||'apple',telegram:o.tg,orderId:id});await ref.update({status:'approved',activationCode:c,expiry});try{const r=await fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:id,tg:o.tg,num:o.num,item:o.item,price:o.price,minutes:o.minutes,product:o.product,code:c,expiry})});if(!r.ok)throw new Error('api');alert('تم التأكيد وتوليد الكود وإرساله للبوت')}catch(e){alert('تم توليد الكود وحفظه، لكن تعذر إرسال رسالة الكود للبوت. تأكد من إعدادات Vercel.')}}
   async function deleteOrder(id){if(!confirm('هل تريد حذف هذا الطلب نهائياً؟'))return;try{const s=await db.ref('orders/'+id).once('value'),o=s.val()||{};const tasks=[db.ref('orders/'+id).remove()];if(o.activationCode)tasks.push(db.ref('keys/'+o.activationCode).remove());await Promise.all(tasks);alert('تم حذف الطلب')}catch(e){alert('تعذر حذف الطلب')}}
+  async function deleteAllOrders(){
+    if(!confirm('هل أنت متأكد من مسح جميع الطلبات؟'))return;
+    if(!confirm('تحذير: سيتم حذف كل الطلبات ومفاتيح التفعيل المرتبطة نهائياً. متابعة؟'))return;
+    const btn=$('deleteAllBtn'); btn.disabled=true;
+    try{
+      const snap=await db.ref('orders').once('value'), updates={};
+      snap.forEach(c=>{updates['orders/'+c.key]=null;const o=c.val()||{};if(o.activationCode)updates['keys/'+o.activationCode]=null});
+      if(!Object.keys(updates).length){alert('لا توجد طلبات لمسحها');return}
+      await db.ref().update(updates); alert('تم مسح جميع الطلبات بنجاح');
+    }catch(e){alert('تعذر مسح جميع الطلبات. حاول مرة أخرى')}finally{btn.disabled=false}
+  }
   function resetManual(){['mItem','mMinutes','mPrice','mTg','mNum'].forEach(id=>$(id).value='');$('mImg').value='';$('manualError').textContent=''}
   $('saveManual').onclick=()=>{const product=$('mProduct').value,item=$('mItem').value.trim(),minutes=Number($('mMinutes').value),price=Number($('mPrice').value),tg=$('mTg').value.trim(),num=$('mNum').value.trim(),file=$('mImg').files[0];if(!item||!minutes||price<0||!tg||!num){$('manualError').textContent='أكمل اسم الباقة والمدة والسعر وTelegram ورقم التحويل';return}const save=img=>db.ref('orders').push({product,item,minutes,price,tg,num,img:img||'',status:'pending',sentToTelegram:false,manual:true,createdAt:Date.now()}).then(()=>{$('addModal').classList.add('hidden');resetManual();alert('تمت إضافة الطلب')}).catch(()=>{$('manualError').textContent='تعذر حفظ الطلب'});if(file){if(file.size>4*1024*1024){$('manualError').textContent='حجم الصورة أكبر من 4MB';return}const reader=new FileReader();reader.onload=()=>save(reader.result);reader.readAsDataURL(file)}else save('')};
   if(sessionStorage.admin==='1')showDashboard();
