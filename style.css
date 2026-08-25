@@ -106,7 +106,7 @@ body {
 /* --- Buttons row (linear_b3) --- */
 .buttons-row {
   display: flex;
-  flex-direction: row;
+  flex-direction: row;99
   align-items: center;
   justify-content: center;
   width: 320px;
@@ -121,7 +121,7 @@ body {
   justify-content: center;
   width: clamp(96px, 34vw, 130px);
   height: clamp(74px, 26vw, 100px);
-  background: #1c1c1c;
+  background: #ff000000;
   cursor: pointer;
   user-select: none;
   opacity: 1;
@@ -132,7 +132,7 @@ body {
 }
 
 .button-label {
-  color: #c30f16;
+  color: #ff0000;
   font-size: 14px;
   font-weight: bold;
   letter-spacing: 0.5px;
