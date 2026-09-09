@@ -2412,6 +2412,11 @@
             { name:'ساعة', price:600, minutes:60 },
             { name:'ساعتين', price:1000, minutes:120 }
         ];
+        const PLANE_LOGO_IMAGE = 'https://i.ibb.co/p6sZpk28/photo-2026-08-25-02-03-50.jpg';
+        const APPLE_LOGO_IMAGE = 'assets/apple-logo.webp';
+        // صور كروت الباقات محلية وثابتة؛ لا يتم قراءتها أو تحديثها من Firebase.
+        const PLANE_CARD_IMAGE = 'assets/plane-card.jpg';
+        const APPLE_CARD_IMAGE = 'assets/apple-card.jpg';
         const DEFAULT_WALLET = '01156446286';
         let selectedProduct = null;
         let packageCatalog = PLANE_PACKAGES.slice();
@@ -2424,8 +2429,8 @@
             document.getElementById('package-panel').classList.add('hidden');
             const chooser = document.getElementById('product-chooser');
             chooser.innerHTML = `
-              <div class="product-card" data-product="plane" onclick="chooseProduct('plane')"><div class="product-logo"><img src="https://i.ibb.co/p6sZpk28/photo-2026-08-25-02-03-50.jpg" loading="lazy" alt="الطيارة"></div><div class="product-title">الطيارة</div><div class="product-desc">باقات الطيارة</div></div>
-              <div class="product-card" data-product="apple" onclick="chooseProduct('apple')"><div class="product-logo"><img src="/assets/apple-logo.webp" loading="lazy" alt="التفاحة"></div><div class="product-title">التفاحة</div><div class="product-desc">باقات التفاحة</div></div>`;
+              <div class="product-card" data-product="plane" onclick="chooseProduct('plane')"><div class="product-logo"><img src="${PLANE_LOGO_IMAGE}" loading="lazy" alt="الطيارة"></div><div class="product-title">الطيارة</div><div class="product-desc">باقات الطيارة</div></div>
+              <div class="product-card" data-product="apple" onclick="chooseProduct('apple')"><div class="product-logo"><img src="${APPLE_LOGO_IMAGE}" loading="lazy" alt="التفاحة"></div><div class="product-title">التفاحة</div><div class="product-desc">باقات التفاحة</div></div>`;
             // صور وباقات التفاحة تُقرأ من Firebase كما كانت في النسخة الأصلية.
             db.ref('products').once('value').then(snap => {
                 appleCatalog = [];
@@ -2437,8 +2442,7 @@
                         appleCatalog.push({
                             name: p.name,
                             price: requested ? requested.price : Number(p.price),
-                            minutes,
-                            img: p.img || ''
+                            minutes
                         });
                     }
                 });
@@ -2458,10 +2462,10 @@
             document.getElementById('package-heading').innerText = type === 'plane' ? 'باقات الطيارة' : 'باقات التفاحة';
             if (type === 'plane') {
                 packageCatalog = PLANE_PACKAGES.slice();
-                grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="https://i.ibb.co/60cfnCG0/photo-2026-08-25-20-46-10.jpg" alt="Aviator package" loading="lazy"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
+                grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="${PLANE_CARD_IMAGE}" alt="Aviator package" loading="lazy"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
             } else {
-                packageCatalog = (appleCatalog.length ? appleCatalog : APPLE_PACKAGES.map((p) => ({...p, img:'/assets/pix3.png'}))).slice();
-                grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="${escapeHtml(p.img || '/assets/pix3.png')}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.style.display='none'"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
+                packageCatalog = (appleCatalog.length ? appleCatalog : APPLE_PACKAGES).slice();
+                grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="${APPLE_CARD_IMAGE}" alt="${escapeHtml(p.name)}" loading="lazy"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
             }
         }
         function chooseProduct(type) {
