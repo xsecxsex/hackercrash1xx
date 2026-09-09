@@ -2105,11 +2105,10 @@
             <div id="ap-prods" class="admin-page">
                 <div class="page-hdr"><button class="back-b" onclick="backAdminMenu()">←</button><span class="pg-ttl">إدارة المتجر</span></div>
                 <div class="sec">
+                    <div class="fgrp"><label class="flbl">نوع الباقة</label><select id="prod-product" class="inp"><option value="plane">الطيارة</option><option value="apple">التفاحة</option></select></div>
                     <div class="fgrp"><label class="flbl">اسم الباقة</label><input type="text" id="prod-name" class="inp" placeholder="كود لمدة نصف ساعة"></div>
                     <div class="fgrp"><label class="flbl">السعر EGP</label><input type="number" id="prod-price" class="inp" placeholder="250"></div>
                     <div class="fgrp"><label class="flbl">المدة بالدقائق</label><input type="number" id="prod-minutes" class="inp" placeholder="30"></div>
-                    <label class="file-drop" for="prod-img" id="prod-file-lbl">📎 صورة المنتج</label>
-                    <input type="file" id="prod-img" accept="image/*" onchange="fileLabel(this,'prod-file-lbl')" hidden>
                     <button onclick="saveProduct()" class="btn-r">💾 حفظ المنتج</button>
                     <div class="divider"></div>
                     <div id="prods-list"></div>
@@ -2431,22 +2430,29 @@
             chooser.innerHTML = `
               <div class="product-card" data-product="plane" onclick="chooseProduct('plane')"><div class="product-logo"><img src="${PLANE_LOGO_IMAGE}" loading="lazy" alt="الطيارة"></div><div class="product-title">الطيارة</div><div class="product-desc">باقات الطيارة</div></div>
               <div class="product-card" data-product="apple" onclick="chooseProduct('apple')"><div class="product-logo"><img src="${APPLE_LOGO_IMAGE}" loading="lazy" alt="التفاحة"></div><div class="product-title">التفاحة</div><div class="product-desc">باقات التفاحة</div></div>`;
-            // صور وباقات التفاحة تُقرأ من Firebase كما كانت في النسخة الأصلية.
-            db.ref('products').once('value').then(snap => {
-                appleCatalog = [];
-                snap.forEach(c => {
-                    const p = c.val();
-                    if (p && p.name && p.price) {
-                        const minutes = Number(p.minutes || p.duration || inferMinutes(p.name));
-                        const requested = APPLE_PACKAGES.find(item => item.minutes === minutes);
-                        appleCatalog.push({
-                            name: p.name,
-                            price: requested ? requested.price : Number(p.price),
-                            minutes
+            // البيانات يكتبها الأدمن، لكن الصور تظل محلية وثابتة ولا تُقرأ من Firebase.
+            Promise.all([
+                db.ref('products/plane').once('value'),
+                db.ref('products/apple').once('value')
+            ]).then(([planeSnap, appleSnap]) => {
+                const readPackages = snap => {
+                    const items = [];
+                    snap.forEach(c => {
+                        const p = c.val();
+                        if (!p || !p.name || p.price === undefined || p.price === '') return;
+                        items.push({
+                            name: String(p.name),
+                            price: Number(p.price),
+                            minutes: Number(p.minutes || p.duration || inferMinutes(p.name))
                         });
-                    }
-                });
-                if (selectedProduct === 'apple') renderPackageCards('apple');
+                    });
+                    return items;
+                };
+                const planeFromFirebase = readPackages(planeSnap);
+                const appleFromFirebase = readPackages(appleSnap);
+                packageCatalogByProduct.plane = planeFromFirebase.length ? planeFromFirebase : PLANE_PACKAGES.slice();
+                packageCatalogByProduct.apple = appleFromFirebase.length ? appleFromFirebase : APPLE_PACKAGES.slice();
+                if (selectedProduct) renderPackageCards(selectedProduct);
             });
         }
         function inferMinutes(name) {
@@ -2461,10 +2467,10 @@
             const grid = document.getElementById('package-grid');
             document.getElementById('package-heading').innerText = type === 'plane' ? 'باقات الطيارة' : 'باقات التفاحة';
             if (type === 'plane') {
-                packageCatalog = PLANE_PACKAGES.slice();
+                packageCatalog = (packageCatalogByProduct.plane || PLANE_PACKAGES).slice();
                 grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="${PLANE_CARD_IMAGE}" alt="Aviator package" loading="lazy"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
             } else {
-                packageCatalog = (appleCatalog.length ? appleCatalog : APPLE_PACKAGES).slice();
+                packageCatalog = (packageCatalogByProduct.apple || APPLE_PACKAGES).slice();
                 grid.innerHTML = packageCatalog.map((p,i) => `<div class="package-card"><img src="${APPLE_CARD_IMAGE}" alt="${escapeHtml(p.name)}" loading="lazy"><div class="package-body"><div><div class="package-name">${escapeHtml(p.name)}</div><div class="package-price">${p.price} EGP</div></div><button class="package-buy" onclick="buyNow(${i})">شراء</button></div></div>`).join('');
             }
         }
@@ -2584,37 +2590,35 @@
         }
 
         function saveProduct() {
+            const product = document.getElementById('prod-product').value;
             const n = document.getElementById('prod-name').value;
             const p = document.getElementById('prod-price').value;
-            const f = document.getElementById('prod-img').files[0];
-            if (!n || !p || !f) return toast('أكمل البيانات');
+            if (!n || !p) return toast('أكمل البيانات');
             showLoader('SAVING');
-            const reader = new FileReader();
-            reader.readAsDataURL(f);
-            reader.onload = () => {
-                const minutes = Number(document.getElementById('prod-minutes').value || 0);
-                db.ref('products').push({
-                    name: n,
-                    price: p,
-                    minutes,
-                    img: reader.result
-                });
-                hideLoader();
-                toast('✅ تم الحفظ');
-                loadProds();
-            };
+            const minutes = Number(document.getElementById('prod-minutes').value || 0);
+            db.ref('products/' + product).push({ name: n, price: p, minutes })
+                .then(() => { hideLoader(); toast('✅ تم الحفظ'); loadProds(); })
+                .catch(() => { hideLoader(); toast('❌ تعذر حفظ الباقة'); });
         }
 
         function loadProds() {
-            db.ref('products').on('value', snap => {
+            Promise.all([
+                db.ref('products/plane').once('value'),
+                db.ref('products/apple').once('value')
+            ]).then(([planeSnap, appleSnap]) => {
                 const list = document.getElementById('prods-list');
                 list.innerHTML = '';
-                snap.forEach(c => list.innerHTML += `<div class="key-row"><div><div class="key-code">${c.val().name}</div><div class="key-meta">${c.val().price} EGP</div></div><button onclick="delProd('${c.key}')" class="btn-del">حذف</button></div>`);
+                const render = (snap, product, label) => snap.forEach(c => {
+                    const p = c.val();
+                    list.innerHTML += `<div class="key-row"><div><div class="key-code">${escapeHtml(p.name)}</div><div class="key-meta">${label} · ${p.price} EGP</div></div><button onclick="delProd('${product}/${c.key}')" class="btn-del">حذف</button></div>`;
+                });
+                render(planeSnap, 'plane', 'الطيارة');
+                render(appleSnap, 'apple', 'التفاحة');
             });
         }
 
         function delProd(id) {
-            if (confirm('حذف المنتج؟')) db.ref('products/' + id).remove();
+            if (confirm('حذف المنتج؟')) db.ref('products/' + id).remove().then(loadProds);
         }
 
         function loadOrders() {
